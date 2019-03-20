@@ -77,23 +77,25 @@ def update_metrics(n):
         html.Span('   Activity: {0:.2f}'.format(get_activity), style=style)
         ]
 
-
 #Callback trigger to run the update_graph_live(n) function at an interval repeatedely" 
 @get_dash_layout.callback(Output('live-update-graph', 'figure'),
               [Input('interval-component', 'n_intervals')])
 
-
 def update_graph_live(n):
     """Function to collect information from Firebase and generate the Plotly Grpah"""
-    
-    
+        
     data = {
         'timestamp1': [],
         'timestamp2': [],
+        'timestamp3': [],
+        'timestamp4': [],
         'temp':[],
-        'ppg':[],
+        'ppg-1':[],
+        'ppg-2':[],
+        'acc':[],
         'used':[]
         }
+    
     all_users_update_ppg = get_firebase_database.child("cloud_4").get()
     for elements in all_users_update_ppg.each():
         for a in elements.val().items():
@@ -105,34 +107,61 @@ def update_graph_live(n):
                 if a[0] == "Timestamp_2":
                     for element in a[1]:
                         data['timestamp2'].append(element)
+                if a[0] == "Timestamp_3":
+                    for element in a[1]:
+                        data['timestamp3'].append(element)
+                if a[0] == "Timestamp_4":
+                    for element in a[1]:
+                        data['timestamp4'].append(element)
                 if a[0] == "PPG-1":
                     for element in a[1]:
-                        data['temp'].append(element)
+                        data['ppg-1'].append(element)
                 if a[0] == "PPG-2":
                     for element in a[1]:
-                        data['ppg'].append(element)
+                        data['ppg-2'].append(element)
+                if a[0] == "Temp":
+                    for element in a[1]:
+                        data['temp'].append(element)
+                if a[0] == "ACC":
+                    for element in a[1]:
+                        data['acc'].append(element)
 
 # Create the graph with subplots using stored values of Data Dictionary
-    fig = plotly.tools.make_subplots(rows=2, cols=1, vertical_spacing=0.10)
+    fig = plotly.tools.make_subplots(rows=4, cols=1, vertical_spacing=0.10)
     fig['layout']['margin'] = {'l': 30, 'r': 10, 'b': 30, 't': 10}
     fig['layout']['legend'] = {'x': 0, 'y': 1, 'xanchor': 'left'}
     
     fig.append_trace({
         'x': data['timestamp1'],
         'y': data['temp'],
-        'name': 'temparature',
+        'name': 'Temparature',
         'mode': 'lines+markers',
         'type': 'scatter'
     }, 1,1)
     
     fig.append_trace({
         'x': data['timestamp2'],
-        'y': data['ppg'],
-        'name': 'PPG',
+        'y': data['ppg-1'],
+        'name': 'PPG-1',
         'mode': 'lines+markers',
         'type': 'scatter'
     }, 2, 1)
+
+     fig.append_trace({
+        'x': data['timestamp3'],
+        'y': data['ppg-2'],
+        'name': 'PPG-2',
+        'mode': 'lines+markers',
+        'type': 'scatter'
+    }, 3,1)
     
+    fig.append_trace({
+        'x': data['timestamp4'],
+        'y': data['acc'],
+        'name': 'ACC',
+        'mode': 'lines+markers',
+        'type': 'scatter'
+    }, 4, 1)
     return fig
 
 #Run the Dash App Server
